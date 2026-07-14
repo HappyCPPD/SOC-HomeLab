@@ -1,0 +1,10 @@
+<group name="local,web,attack,">
+  <rule id="100020" level="12">
+    <if_sid>31100</if_sid>
+    <url>etc/passwd</url>
+    <description>Critical web request attempting to read /etc/passwd (path traversal to system password file)</description>
+    <mitre>
+      <id>T1083</id>
+    </mitre>
+  </rule>
+</group>

@@ -1,0 +1,58 @@
+# Writing my own detection rule
+
+Everything up to here used Wazuh's built-in rules. I ran an attack, a rule I didn't write caught it, I screenshotted the alert. That's fine for learning what the tool does, but it's not the skill I actually want. I want to be the person who decides what's worth alerting on. So for the last piece I wrote my own rule. It's small. It taught me more than the three detections before it.
+
+## The gap I wanted to close
+
+When I did the web-attack detection, my path-traversal attempt against `/vulnerabilities/fi/?page=../../../../etc/passwd` got flagged, but only as a generic "web attack returned code 200." Level 6. The same alert I'd get for someone poking at a search box.
+
+But that request isn't generic. `/etc/passwd` is the system's list of user accounts. Someone reaching for it through a web app is trying to read files they should never touch. I wanted that specific act to scream, not blend in. The built-in rules wouldn't do that for me, so I had to say it myself.
+
+## The rule
+
+Custom rules live on the manager, in `local_rules.xml`, and Wazuh reserves the ID range 100000 to 120000 for your own. Here's what I wrote:
+
+```xml
+<group name="local,web,attack,">
+  <rule id="100020" level="12">
+    <if_sid>31100</if_sid>
+    <url>etc/passwd</url>
+    <description>Critical web request attempting to read /etc/passwd (path traversal to system password file)</description>
+    <mitre>
+      <id>T1083</id>
+    </mitre>
+  </rule>
+</group>
+```
+
+Four lines of logic, and each one is a decision.
+
+`level="12"` is critical. The generic alert was a 6. I'm saying this is six levels more serious, and I have to justify that to myself.
+
+`<if_sid>31100</if_sid>` is the line that made everything click. 31100 is Wazuh's base rule for "this is a web-server access log." By saying `if_sid`, I'm telling my rule to only run after Wazuh has already recognized and parsed the log. I'm not re-parsing raw text, I'm standing on top of work the built-in rules already did, and adding one more judgment. Detection rules build on each other.
+
+`<url>etc/passwd</url>` is the actual condition. If the parsed URL contains `etc/passwd`, fire.
+
+`<mitre>` uses the same ATT&CK tagging the built-in rules use (T1083, File and Directory Discovery), so my rule shows up in the same reports as everything else.
+
+## Testing it without waiting for an attack
+
+The thing I didn't expect to love: `wazuh-logtest`. Run it, paste a single raw log line, and it tells you exactly which rules fire and why. So I could test my rule against a made-up log line instantly, instead of launching the attack and refreshing a dashboard hoping:
+
+```text
+127.0.0.1 - - [14/Jul/2026:10:00:00 +0000] "GET /?file=../../../../etc/passwd HTTP/1.1" 200 512 "-" "curl/8.0"
+```
+
+It came back with `Rule id: '100020'`, `Level: 12`, my description. That feedback loop, write, test a line, adjust, is how the rule actually got right. Then I ran the real request against DVWA's file-inclusion page and watched 100020 fire live in the dashboard at level 12, exactly where the generic level-6 alert used to be.
+
+![rule 100020 firing live at level 12, in place of the generic level-6 alert](../evidence/custom-rule/Screenshot%20From%202026-07-15%2000-58-09.png)
+
+## What I took away
+
+A SIEM out of the box gives you a huge pile of general detections. The job isn't to admire them, it's to know your own environment well enough to say "this specific thing matters more than the tool thinks it does," and then encode that. My rule is tiny and it only covers one file, but writing it flipped how I see the whole system. The built-in rules stopped being a finished product and started being a foundation I can extend.
+
+That's the difference between running a SIEM and doing detection engineering, and it's four lines of XML wide.
+
+## Limits
+
+My rule is deliberately narrow: it matches the literal string `etc/passwd`. An attacker who URL-encodes the path, or targets a different sensitive file, walks right past it. A production version would cover more files and more evasions, and I'd tune the severity against how often it false-positives. But narrow-and-correct was the point for a first rule. I'd rather ship one rule I fully understand than ten I copied.
