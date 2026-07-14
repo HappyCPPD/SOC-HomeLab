@@ -8,15 +8,15 @@ One laptop, running a single-node Wazuh stack in Docker, monitoring itself and g
 
 ```text
                  Ubuntu host (Ryzen 7 5800H, 16 GB)
-  ┌───────────────────────────────────────────────┐
+  ┌────────────────────────────────────────────────┐
   │  Docker: Wazuh single-node stack               │
   │    ├─ wazuh.indexer    (stores + searches)     │
   │    ├─ wazuh.manager    (analyzes, holds rules) │
   │    └─ wazuh.dashboard  (web UI, port 443)      │
-  │                                                 │
+  │                                                │
   │  Wazuh agent on the host        -- endpoint    │
   │  DVWA container (vulnerable web app) -- target │
-  └───────────────────────────────────────────────┘
+  └────────────────────────────────────────────────┘
        attacks generated locally: hydra, curl, file edits
 ```
 
@@ -50,7 +50,7 @@ Detections 1 through 3 use Wazuh's built-in rules: anyone can trigger those by f
 </rule>
 ```
 
-`if_sid` is the idea that made it click: my rule runs on top of work the built-in rules already did, instead of re-parsing raw logs. I tested it with `wazuh-logtest`, fed it a log line and it told me exactly which rule fires, then watched 100020 fire live where the generic alert used to be. That's the difference between running a SIEM and doing detection engineering, and it's four lines of XML wide.
+`if_sid` is the idea that made it click: my rule runs on top of work the built-in rules already did, instead of re-parsing raw logs. I tested it with `wazuh-logtest`, fed it a log line and it told me exactly which rule fires, then watched 100020 fire live where the generic alert used to be.
 
 ## What the whole thing taught me
 
