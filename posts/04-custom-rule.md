@@ -51,7 +51,7 @@ It came back with `Rule id: '100020'`, `Level: 12`, my description. That feedbac
 
 A SIEM out of the box gives you a huge pile of general detections. The job isn't to admire them, it's to know your own environment well enough to say "this specific thing matters more than the tool thinks it does," and then encode that. My rule is tiny and it only covers one file, but writing it flipped how I see the whole system. The built-in rules stopped being a finished product and started being a foundation I can extend.
 
-That's the difference between running a SIEM and doing detection engineering, and it's four lines of XML wide.
+That's the difference between running a SIEM and doing detection engineering.
 
 ## Limits
 
