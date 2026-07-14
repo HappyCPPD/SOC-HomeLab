@@ -56,7 +56,7 @@ The rule chain underneath makes the fork explicit:
 The alert in the dashboard is nice, but I wanted to see why it fired, not just that it did. Wazuh ships a tool called `wazuh-logtest` that takes a raw log line and shows you the exact decoder and rule that catch it:
 
 ```bash
-docker exec -it MANAGER /var/ossec/bin/wazuh-logtest
+docker exec -it single-node-wazuh.manager-1 /var/ossec/bin/wazuh-logtest
 ```
 
 I pasted in a raw failed-login line and it printed the decoder that pulled the fields out and the rule that matched, before I'd generated a single real event. That was the moment it stopped feeling like magic. I could watch a plain line of text turn into a classified alert.

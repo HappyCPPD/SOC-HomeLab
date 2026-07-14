@@ -30,12 +30,12 @@ Four attacks, each caught end to end: the attack, the log it left, the rule that
 
 | # | Detection | What fires | MITRE | Write-up |
 |---|---|---|---|---|
-| 1 | SSH brute-force | 5763 / 5712 | T1110 | [post](posts/01-ssh-bruteforce.md) · [reproduce steps](detections/ssh-bruteforce/setup.md) |
+| 1 | SSH brute-force | 5763 / 5712 | T1110 | [post](posts/01-ssh-bruteforce.md) |
 | 2 | File Integrity Monitoring | 550 / 553 / 554 | T1565 | [post](posts/02-fim.md) |
 | 3 | Web attack (SQLi / XSS / traversal) | 31103 / 31105 / 31106 | T1190 | [post](posts/03-web-attack.md) |
 | 4 | Custom rule, `/etc/passwd` access | 100020 (mine) | T1083 | [post](posts/04-custom-rule.md) · [rule](evidence/custom-rule/local_rule_100020.xml) |
 
-Detection 1 has a full standalone reproduce doc. The other three have their setup steps inline in the write-up itself.
+Each write-up covers its own setup steps inline.
 
 ## The part I'm proudest of
 
