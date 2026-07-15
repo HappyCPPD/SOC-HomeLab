@@ -1,5 +1,7 @@
 # Detection without an attacker: watching files change
 
+*Setting up File Integrity Monitoring in Wazuh and learning that half of detection has nothing to do with recognizing an attacker. It's just knowing what normal looks like well enough to notice when it stops.*
+
 My first detection was a brute-force: a loud, obvious attack with a tool firing passwords at a login. This one is the opposite. There's no attacker, no exploit, nothing dramatic. A file just changes, and Wazuh notices. That turned out to be a more useful thing to understand than the flashy attack.
 
 ## What FIM actually is
@@ -10,17 +12,17 @@ FIM stands for File Integrity Monitoring. Plain version: you hand Wazuh a folder
 
 I made a throwaway folder for the agent to watch:
 
-```bash
+```
 sudo mkdir -p /opt/fim-test
 ```
 
 Then I added one line to the agent's config (`/var/ossec/etc/ossec.conf`), inside the `<syscheck>` section (syscheck is Wazuh's internal name for FIM):
 
-```xml
+```
 <directories realtime="yes" check_all="yes" report_changes="yes">/opt/fim-test</directories>
 ```
 
-![the syscheck block added to ossec.conf](../evidence/fim/config.png)
+![The syscheck block added to ossec.conf in nano, watching /opt/fim-test in realtime](../evidence/fim/config.png)
 
 The three settings each earn their place. `realtime="yes"` means it alerts the moment something happens instead of on a slow schedule. `report_changes="yes"` is the one I'm glad I turned on: it doesn't just say a file changed, it shows what changed. Then I restarted the agent so it read the new setting.
 
@@ -28,7 +30,7 @@ The three settings each earn their place. `realtime="yes"` means it alerts the m
 
 Three commands, three kinds of change:
 
-```bash
+```
 echo "original secret" | sudo tee /opt/fim-test/secret.txt      # created
 echo "tampered!"       | sudo tee -a /opt/fim-test/secret.txt   # modified
 sudo rm /opt/fim-test/secret.txt                                # deleted
@@ -38,7 +40,7 @@ sudo rm /opt/fim-test/secret.txt                                # deleted
 
 Three alerts, one per change: 554 for the file being added, 550 for the modification, 553 for the deletion.
 
-![all three FIM alerts, 554/550/553, in Threat Hunting](../evidence/fim/02-fim-alerts.png)
+![Wazuh Threat Hunting table showing all three FIM alerts, rules 554, 550, and 553](../evidence/fim/02-fim-alerts.png)
 
 The modified alert was the one that made me sit up. Because I'd turned on `report_changes`, rule 550 didn't just tell me `secret.txt` changed, it showed me the actual line that got added. The raw alert carries a `diff` field: `1a2\n> tampered!\n`. Wazuh had hashed the file before and after (MD5, SHA1, SHA256, all three) and handed me the exact edit, down to the byte count going from 16 to 26.
 
