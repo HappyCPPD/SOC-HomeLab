@@ -25,7 +25,7 @@ After correcting what I did, it started working, I had 20 failed logins in a few
 
 Wazuh caught it as rule 5763, "sshd: brute force trying to get access to the system." Level 10, mapped to MITRE T1110, Brute Force.
 
-![Wazuh Threat Hunting table with the rule 5763 alert highlighted at rule.level 10](/blog/ssh-bruteforce/02-alert-5763.png)
+![Wazuh Threat Hunting table with the rule 5763 alert highlighted at rule.level 10](/blog/evidence/ssh-bruteforce/02-alert-5763.png)
 
 But I'd read that the SSH brute-force rule was 5712, and I wasn't getting 5712. I got 5763. For a minute I thought I'd done something wrong.
 
